@@ -30,11 +30,12 @@ void file_manager::set_mask( const std::string& mask) {
 
 void file_manager::set_search_substring_file(const std::string &substring) {
     fs::path temp(substring);
-
+    //determine whether the path is relative or absolute
     try {
         if (temp.is_relative()) {
             temp = this->_path / temp;
         }
+
         if (_search_substring_file.is_open()) {
             _search_substring_file.close();
         }
@@ -64,7 +65,7 @@ void file_manager::set_output_file(const std::string& output) {
     }
     catch (std::fstream::failure& e){
         std::cerr<<"Opening output file error"<<std::endl;
-        
+
         std::exit(1);
     }
 }
@@ -78,24 +79,25 @@ std::ofstream &file_manager::get_output_file() {
 }
 
 void view_directory(file_manager &fm, const fs::path& current_directory) {
-        std::ifstream str;
+
+    //iterate directories and files in current_directory
+        std::ifstream str; //this ifstream is declared for files with strings where we search substring
+    str.exceptions(std::ifstream::failbit);
     try {
         for (auto &rsc : fs::directory_iterator(current_directory)) {
             auto current_filename = rsc.path().filename().string();
-
 
             if (std::regex_match(current_filename, fm.get_mask()) && fs::is_regular_file(rsc)) {
 
                 try {
                     str.open(rsc.path().string());
-                    fm.get_output_file() << rsc.path().string() << " ";
                 }
-                catch (std::fstream::failure &e) {
-                    std::cout << e.what() << std::endl;
+                catch (std::ios::failure& e) {
+                    std::cout << "Permission denied: " << rsc.path().string() << std::endl;
+                    continue;
                 }
-                catch (...) {
-                    std::cout << "Something went wrong..." << std::endl;
-                }
+
+                fm.get_output_file() << rsc.path().string() << " "; //writing str_filename to output file
                 rabin_karp_search(fm.get_search_substring_file(), str, fm.get_output_file());
                 str.close();
             } else if(fs::is_directory(rsc)) {
@@ -105,7 +107,7 @@ void view_directory(file_manager &fm, const fs::path& current_directory) {
         }
     }
     catch(fs::filesystem_error& e){
-        std::cout<<e.what()<<std::endl;
+        std::cout<<e.what()<<std::endl; 
         return;
     }
 

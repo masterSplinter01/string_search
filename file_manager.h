@@ -4,6 +4,7 @@
 #include <regex>
 #include "search_algorithm.h"
 #include <stdexcept>
+#include <cassert>
 
 namespace fs = std::experimental::filesystem;
 
