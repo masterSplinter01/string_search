@@ -14,7 +14,7 @@ int main(int ac, char* av[]) {
     desc.add_options()
             ("path,p", po::value<std::string>(), "directory")
             ("mask,m", po::value<std::string>(), "filename's masks")
-            ("input,i", po::value<std::string>(), "filename with string we search")
+            ("input,i", po::value<std::string>()->required(), "filename with string we search")
             ("output,o", po::value<std::string>(), "result file directory")
             ("help,h", "produce help message")
             ;
@@ -24,23 +24,33 @@ int main(int ac, char* av[]) {
 
     file_manager fm;
 
-    if (vm.count("path") == 1){
+
+    if (vm.count("path")) {
         fm.set_path(vm["path"].as<std::string>());
-        //std::cout<<vm["path"].as<std::string>()<<"\n";
+    }
+    else{
+        fm.set_path(fs::current_path());
     }
 
-    if (vm.count("mask") == 1){
-        //std::cout<<vm["mask"].as<std::string>()<<"\n";
+
+    if (vm.count("mask")){
         fm.set_mask(vm["mask"].as<std::string>());
-
+    } else{
+        fm.set_mask("^(.*)");
     }
 
-    if (vm.count("input") == 1){
+
+    if (vm.count("input")) {
         fm.set_search_substring_file(vm["input"].as<std::string>());
     }
 
-    if (vm.count("output") == 1){
+
+    if (vm.count("output")){
         fm.set_output_file(vm["output"].as<std::string>());
+    }
+    else {
+        std::cout<<"File with results not specified, default output file: " << fm.get_path() << "/result.txt" << std::endl;
+        fm.set_output_file("result.txt");
     }
 
     if (vm.count("help")) {
@@ -48,14 +58,7 @@ int main(int ac, char* av[]) {
         return 0;
     }
 
-
-
     view_directory(fm, fm.get_path());
-
-
-
-
-
 
     return 0;
 }

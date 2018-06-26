@@ -8,5 +8,5 @@ add_executable(string_search main.cpp file_manager.cpp file_manager.h search_alg
 set(CMAKE_CXX_FLAGS "-lboost_program_options")
 set(CMAKE_EXE_LINKER_FLAGS "-lboost_system -lboost_filesystem")
 
-set(ST_CXXFS_LIBS stdc++fs)
+
 target_link_libraries(${PROJECT_NAME} stdc++fs)
