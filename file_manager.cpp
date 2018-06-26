@@ -64,6 +64,7 @@ void file_manager::set_output_file(const std::string& output) {
     }
     catch (std::fstream::failure& e){
         std::cerr<<"Opening output file error"<<std::endl;
+        
         std::exit(1);
     }
 }
