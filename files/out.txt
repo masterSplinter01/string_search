@@ -1,2 +1,0 @@
-/home/dan/CLionProjects/string_search/files/dir1/str1.txt 25 
-/home/dan/CLionProjects/string_search/files/str3.txt 

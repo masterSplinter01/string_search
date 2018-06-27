@@ -4,19 +4,19 @@
 #include <regex>
 #include "search_algorithm.h"
 #include <stdexcept>
-#include <cassert>
+
 
 namespace fs = std::experimental::filesystem;
 
 class file_manager {
 
 public:
-    file_manager();
-    file_manager(std::string dir_path, std::string file_mask, std::string input, std::string output);
-    fs::path get_path();
-    std::regex get_mask();
-    std::ifstream& get_search_substring_file();
-    std::ofstream& get_output_file();
+    file_manager() = default;
+    file_manager(const std::string& dir_path, const std::string& file_mask, const std::string& input, const std::string& output);
+    const fs::path get_path();
+    const std::regex get_mask();
+     std::ifstream& get_search_substring_file();
+     std::ofstream& get_output_file();
 
     void set_path(const std::string& path);
     void set_mask(const std::string& mask);
