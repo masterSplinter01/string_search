@@ -2,7 +2,6 @@
 #include <fstream>
 #include <vector>
 #include <climits>
-#include <cmath>
 #include <cassert>
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -16,7 +15,7 @@ typedef unsigned long long int ull;
 
 
 ull init_hash(std::ifstream &input, const ull& length);
-ull step_hash(char prev_c, char next_c, const ull& length, const ull &prev_hash );
+ull step_hash(char prev_c, char next_c, const ull& length, const ull &prev_hash, const ull p_pow );
 
 void rabin_karp_search( std::ifstream& substring, std::ofstream& output, const std::string& filename);
 

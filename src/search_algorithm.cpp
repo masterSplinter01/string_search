@@ -35,6 +35,10 @@ void rabin_karp_search(std::ifstream &substring,  std::ofstream &output, const s
         return;
     }
 
+    ull p_pow = 1;
+    for (size_t i = 0; i < substring_length; ++i){
+        p_pow  *= p;
+    }
 
     //calculating hash of substring and hash of first substring_length chars of string
     auto substring_hash = init_hash(substring, substring_length);
@@ -61,7 +65,7 @@ void rabin_karp_search(std::ifstream &substring,  std::ofstream &output, const s
         else{
             string_fstream2.get(next_c);
             string_fstream1.get(prev_c);
-            current_string_chunk_hash = step_hash(prev_c, next_c, substring_length, current_string_chunk_hash);
+            current_string_chunk_hash = step_hash(prev_c, next_c, substring_length, current_string_chunk_hash, p_pow);
         }
     }
 
@@ -91,8 +95,8 @@ ull init_hash(std::ifstream &input, const ull &length) {
     return  hash;
 }
 
-ull step_hash(char prev_c, char next_c, const ull &length, const ull &prev_hash) {
-    return (ull)prev_hash * (ull)p  - (ull)prev_c * (ull)pow(p, length) + (ull)next_c;
+ull step_hash(char prev_c, char next_c, const ull &length, const ull &prev_hash, const ull p_pow) {
+    return (ull)prev_hash * (ull)p  - (ull)prev_c * p_pow + (ull)next_c;
 
 }
 
