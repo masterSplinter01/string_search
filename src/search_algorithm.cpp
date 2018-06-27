@@ -5,7 +5,8 @@
 static const  size_t p = 53; //prime const number
 
 void rabin_karp_search(std::ifstream &substring,  std::ofstream &output, const std::string& filename) {
-    std::cout<<"thread for "<<filename<<" opened!"<<std::endl;
+
+
     std::ifstream string_fstream1;
     std::ifstream string_fstream2;
 
@@ -18,9 +19,9 @@ void rabin_karp_search(std::ifstream &substring,  std::ofstream &output, const s
     }
     catch (std::ios::failure& e) {
         std::cout << "Permission denied: " << filename<< std::endl;
-        std::cout<<"thread for "<<filename<<" finished!"<<std::endl;
         return;
     }
+    assert(string_fstream1.is_open());
 
     char prev_c, next_c;
 
@@ -33,7 +34,6 @@ void rabin_karp_search(std::ifstream &substring,  std::ofstream &output, const s
     string_fstream1.seekg(0, std::ios::beg);
 
     if (substring_length > string_length){
-        std::cout<<"thread for "<<filename<<" finished!"<<std::endl;
         return;
     }
 
@@ -54,14 +54,12 @@ void rabin_karp_search(std::ifstream &substring,  std::ofstream &output, const s
     //calculating hashes of string chunks with length = substring's length. if hash of substring == hash of chunks, we check that this substrings are the same
 
 
-
     for (size_t i = 0; i < string_length - substring_length + 1; ++i){
         if (substring_hash == current_string_chunk_hash){
             if (check_strings(substring, string_fstream1, i, i+substring_length)){
                 mtx.lock();
                 output<<filename<<std::endl;
                 mtx.unlock();
-                std::cout<<"thread for "<<filename<<" finished!"<<std::endl;
                 return;
             }
         }
@@ -71,7 +69,6 @@ void rabin_karp_search(std::ifstream &substring,  std::ofstream &output, const s
             current_string_chunk_hash = step_hash(prev_c, next_c, substring_length, current_string_chunk_hash, p_pow);
         }
     }
-    std::cout<<"thread for "<<filename<<" finished!"<<std::endl;
 
 }
 

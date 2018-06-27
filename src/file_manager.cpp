@@ -75,7 +75,7 @@ void file_manager::set_output_file(const std::string& output) {
 void file_manager::view_directory() {
     //iterate directories and files in current_directory
 
-    asio::thread_pool pool(std::thread::hardware_concurrency());
+    boost::asio::thread_pool pool(std::thread::hardware_concurrency());
 
     for (auto &rsc : fs::recursive_directory_iterator(_path, fs::directory_options::skip_permission_denied)) {
 
@@ -83,16 +83,13 @@ void file_manager::view_directory() {
 
         if (std::regex_match(current_filename, _mask) && fs::is_regular_file(rsc)) {
             auto absolute_file_path = rsc.path().string();
-
-            asio::post(pool, rabin_karp_search, _search_substring_file, _output_file, absolute_file_path);
-
-
+            boost::asio::post(pool,[this, absolute_file_path](){rabin_karp_search(_search_substring_file, _output_file, absolute_file_path);});
 
         }
     }
 
+    pool.join();
+
+
 }
 
-
-//boost::thread thread([ this,  &str, &str2, &filename ]()
-//{ rabin_karp_search( ,  , );});

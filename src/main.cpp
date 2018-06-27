@@ -7,7 +7,7 @@
 
 namespace po = boost::program_options;
 
-boost::mutex mtx;
+std::mutex mtx;
 
 int main(int ac, char* av[]) {
 

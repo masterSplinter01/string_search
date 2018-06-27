@@ -5,8 +5,9 @@
 #include <cassert>
 
 #include <boost/thread/mutex.hpp>
+#include <mutex>
 
-extern boost::mutex mtx;
+extern std::mutex mtx;
 
 
 
