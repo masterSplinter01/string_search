@@ -71,29 +71,24 @@ void file_manager::set_output_file(const std::string& output) {
     return _output_file;
 }
 
-void view_directory(file_manager &fm, const fs::path& current_directory) {
-
+void file_manager::view_directory() {
     //iterate directories and files in current_directory
-    std::ifstream str; //this ifstream is declared for files with strings where we search substring
-    std::ifstream str2;
-    str.exceptions(std::ifstream::failbit);
-    for (auto &rsc : fs::recursive_directory_iterator(current_directory, fs::directory_options::skip_permission_denied)) {
+
+
+    for (auto &rsc : fs::recursive_directory_iterator(_path, fs::directory_options::skip_permission_denied)) {
+
         auto current_filename = rsc.path().filename().string();
-        if (std::regex_match(current_filename, fm.get_mask()) && fs::is_regular_file(rsc)) {
-            try {
-                str.open(rsc.path().string());
-                str2.open(rsc.path().string());
-            }
-            catch (std::ios::failure& e) {
-                std::cout << "Permission denied: " << rsc.path().string() << std::endl;
-                continue;
-            }
-            rabin_karp_search(fm.get_search_substring_file(), str, str2, fm.get_output_file(), rsc.path().string());
-            str.close();
+
+        if (std::regex_match(current_filename, _mask) && fs::is_regular_file(rsc)) {
+            auto filename = rsc.path().string();
+
+            boost::thread thr(rabin_karp_search, std::ref(_search_substring_file),  std::ref(_output_file), std::ref(filename));
+            thr.join();
         }
     }
 
-
-
-
 }
+
+
+//boost::thread thread([ this,  &str, &str2, &filename ]()
+//{ rabin_karp_search( ,  , );});

@@ -4,6 +4,7 @@
 #include <regex>
 #include "search_algorithm.h"
 #include <stdexcept>
+#include <boost/thread.hpp>
 
 
 namespace fs = std::experimental::filesystem;
@@ -22,6 +23,7 @@ public:
     void set_mask(const std::string& mask);
     void set_search_substring_file(const std::string &substring);
     void set_output_file(const std::string& output);
+    void view_directory();
 
 private:
     fs::path _path;
@@ -31,5 +33,5 @@ private:
 
 };
 
-void view_directory(file_manager& fm, const fs::path& current_directory);
+
 

@@ -1,14 +1,17 @@
 #include <iostream>
 #include <fstream>
 #include <boost/program_options.hpp>
-
-
+#include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
 
 #include "file_manager.h"
 
 namespace po = boost::program_options;
 
+boost::mutex mtx;
+
 int main(int ac, char* av[]) {
+
     /*desc keeps all program arguments, their types and descriptions*/
     po::options_description desc("Allowed options");
     desc.add_options()
@@ -60,7 +63,7 @@ int main(int ac, char* av[]) {
     }
 
 
-    view_directory(fm, fm.get_path());
+    fm.view_directory();
 
     return 0;
 }
