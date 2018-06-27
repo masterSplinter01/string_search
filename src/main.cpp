@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <boost/program_options.hpp>
-#include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
 
 #include "file_manager.h"

@@ -1,11 +1,11 @@
 #include <iostream>
-#include <boost/thread.hpp>
+
 #include "search_algorithm.h"
 
 static const  size_t p = 53; //prime const number
 
 void rabin_karp_search(std::ifstream &substring,  std::ofstream &output, const std::string& filename) {
-
+    std::cout<<"thread for "<<filename<<" opened!"<<std::endl;
     std::ifstream string_fstream1;
     std::ifstream string_fstream2;
 
@@ -18,6 +18,7 @@ void rabin_karp_search(std::ifstream &substring,  std::ofstream &output, const s
     }
     catch (std::ios::failure& e) {
         std::cout << "Permission denied: " << filename<< std::endl;
+        std::cout<<"thread for "<<filename<<" finished!"<<std::endl;
         return;
     }
 
@@ -32,6 +33,7 @@ void rabin_karp_search(std::ifstream &substring,  std::ofstream &output, const s
     string_fstream1.seekg(0, std::ios::beg);
 
     if (substring_length > string_length){
+        std::cout<<"thread for "<<filename<<" finished!"<<std::endl;
         return;
     }
 
@@ -59,6 +61,7 @@ void rabin_karp_search(std::ifstream &substring,  std::ofstream &output, const s
                 mtx.lock();
                 output<<filename<<std::endl;
                 mtx.unlock();
+                std::cout<<"thread for "<<filename<<" finished!"<<std::endl;
                 return;
             }
         }
@@ -68,7 +71,7 @@ void rabin_karp_search(std::ifstream &substring,  std::ofstream &output, const s
             current_string_chunk_hash = step_hash(prev_c, next_c, substring_length, current_string_chunk_hash, p_pow);
         }
     }
-
+    std::cout<<"thread for "<<filename<<" finished!"<<std::endl;
 
 }
 
@@ -96,7 +99,7 @@ ull init_hash(std::ifstream &input, const ull &length) {
 }
 
 ull step_hash(char prev_c, char next_c, const ull &length, const ull &prev_hash, const ull p_pow) {
-    return (ull)prev_hash * (ull)p  - (ull)prev_c * p_pow + (ull)next_c;
+    return prev_hash * (ull)p  - (ull)prev_c * p_pow + (ull)next_c;
 
 }
 

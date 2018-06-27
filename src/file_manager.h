@@ -4,8 +4,10 @@
 #include <regex>
 #include "search_algorithm.h"
 #include <stdexcept>
-#include <boost/thread.hpp>
-
+#include <boost/thread/thread_pool.hpp>
+//#include <boost/asio/thread_pool.hpp>
+#include <thread>
+#include <boost/asio.hpp>
 
 namespace fs = std::experimental::filesystem;
 

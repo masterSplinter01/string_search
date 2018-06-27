@@ -1,3 +1,4 @@
+
 #include "file_manager.h"
 
 file_manager::file_manager(const std::string& dir_path, const std::string& file_mask, const std::string& input, const std::string& output):
@@ -74,16 +75,19 @@ void file_manager::set_output_file(const std::string& output) {
 void file_manager::view_directory() {
     //iterate directories and files in current_directory
 
+    asio::thread_pool pool(std::thread::hardware_concurrency());
 
     for (auto &rsc : fs::recursive_directory_iterator(_path, fs::directory_options::skip_permission_denied)) {
 
         auto current_filename = rsc.path().filename().string();
 
         if (std::regex_match(current_filename, _mask) && fs::is_regular_file(rsc)) {
-            auto filename = rsc.path().string();
+            auto absolute_file_path = rsc.path().string();
 
-            boost::thread thr(rabin_karp_search, std::ref(_search_substring_file),  std::ref(_output_file), std::ref(filename));
-            thr.join();
+            asio::post(pool, rabin_karp_search, _search_substring_file, _output_file, absolute_file_path);
+
+
+
         }
     }
 

@@ -3,7 +3,7 @@
 #include <vector>
 #include <climits>
 #include <cassert>
-#include <boost/thread.hpp>
+
 #include <boost/thread/mutex.hpp>
 
 extern boost::mutex mtx;
