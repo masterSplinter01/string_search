@@ -1,17 +1,18 @@
 #include <iostream>
 #include <fstream>
 #include <boost/program_options.hpp>
-#include <boost/thread/mutex.hpp>
+#include <mutex>
+#include <experimental/filesystem>
+#include <regex>
 
 #include "file_manager.h"
 
 namespace po = boost::program_options;
+namespace fs = std::experimental::filesystem;
 
 std::mutex mtx;
 
-int main(int ac, char* av[]) {
-
-    /*desc keeps all program arguments, their types and descriptions*/
+int main(int ac, char* av[]){
     po::options_description desc("Allowed options");
     desc.add_options()
             ("path,p", po::value<std::string>(), "directory")
@@ -24,45 +25,48 @@ int main(int ac, char* av[]) {
     po::store(po::parse_command_line(ac, av, desc), vm);
     po::notify(vm);
 
-    file_manager fm;
+    fs::path path;
+    std::regex mask;
+    std::string search_string_filename;
+    std::ofstream output_file;
 
-    /*setting fm fields */
-    // if user doesnt set path, we use current directory
-    if (vm.count("path")) {
-        fm.set_path(vm["path"].as<std::string>());
+    if (vm.count("path")){
+        path = vm["path"].as<std::string>();
     }
     else{
-        fm.set_path(fs::current_path());
+        path = fs::current_path();
     }
 
-    //if user doesnt set mask, we use regex mask for any filename
     if (vm.count("mask")){
-        fm.set_mask(vm["mask"].as<std::string>());
+        mask = vm["mask"].as<std::string>();
     } else{
-        fm.set_mask("^(.*)");
+        mask = "^(.*)";
     }
 
-    //input option is requred, if user doesnt set input, program throws exception
     if (vm.count("input")) {
-        fm.set_search_substring_file(vm["input"].as<std::string>());
+        search_string_filename = make_absolute_path(path, vm["input"].as<std::string>());
     }
 
-    //if user doesnt set output file, we create file in current path with default name result.txt
-    if (vm.count("output")){
-        fm.set_output_file(vm["output"].as<std::string>());
+    if (vm.count("output")) {
+        output_file.open(make_absolute_path(path, vm["output"].as<std::string>()));
     }
     else {
-        std::cout<<"File with results not specified, default output file: " << fm.get_path().string() << "result.txt" << std::endl;
-        fm.set_output_file("result.txt");
+        std::cout<<"File with results not specified, default output file: " << path.string() << "result.txt" << std::endl;
+        output_file.open(make_absolute_path(path, "result.txt"));
     }
 
     if (vm.count("help")) {
-       std::cout << desc << "\n";
+        std::cout << desc << "\n";
         return 0;
     }
 
+    substring current_substr(search_string_filename);
 
-    fm.view_directory();
+   view_directory(current_substr, path, mask, output_file);
+
 
     return 0;
+
+
+
 }
