@@ -13,7 +13,7 @@ substring::substring(const std::string& filename): _filename(filename), _p_pow(1
         temp.seekg(0, std::ios::beg);
     }
     catch (std::fstream::failure& e){
-        std::cerr<<"Opening substring file error"<<std::endl;
+        std::cerr<<"Opening substring file error: " << filename << std::endl;
         exit(1);
     }
 
@@ -42,7 +42,7 @@ const ull substring::get_p_pow() {
 
 
 void rabin_karp_search(substring& substr, const std::string &search_file, std::ofstream &output)  {
-
+    std::cout<<"Thread for " << search_file << " started"<<std::endl;
     std::ifstream substring_file;
     std::ifstream string_fstream1;
     std::ifstream string_fstream2;
@@ -57,6 +57,7 @@ void rabin_karp_search(substring& substr, const std::string &search_file, std::o
     }
     catch (std::ios::failure& e) {
         std::cout << "Permission denied: " << search_file<< std::endl;
+        std::cout<<"Thread for " << search_file << " finished"<<std::endl;
         return;
     }
 
@@ -75,6 +76,7 @@ void rabin_karp_search(substring& substr, const std::string &search_file, std::o
     string_fstream1.seekg(0, std::ios::beg);
 
     if (substr.get_length() > string_length){
+        std::cout<<"Thread for " << search_file << " finished"<<std::endl;
         return;
     }
 
@@ -91,6 +93,7 @@ void rabin_karp_search(substring& substr, const std::string &search_file, std::o
         if (substr.get_hash() == string_chunk_hash && check_strings(substring_file, string_fstream1)){
             std::unique_lock<std::mutex> lock(mtx);
             output<<search_file<<std::endl;
+            std::cout<<"Thread for " << search_file << " finished"<<std::endl;
             return;
         }
 
