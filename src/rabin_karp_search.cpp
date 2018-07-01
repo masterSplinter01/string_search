@@ -22,7 +22,6 @@ substring::substring(const std::string& filename): _filename(filename), _p_pow(1
     for (size_t i = 0; i < _length; ++i){
         _p_pow  *= p;
     }
-
 }
 
 const std::string substring::get_filename() {
