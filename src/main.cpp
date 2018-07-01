@@ -1,16 +1,48 @@
-#include <iostream>
-#include <fstream>
 #include <boost/program_options.hpp>
-#include <mutex>
 #include <experimental/filesystem>
 #include <regex>
+#include <boost/asio.hpp>
+#include <boost/asio/thread_pool.hpp>
+#include <cstdlib>
 
-#include "file_manager.h"
+#include "rabin_karp_search.h"
 
 namespace po = boost::program_options;
 namespace fs = std::experimental::filesystem;
 
 std::mutex mtx;
+
+void search_substring(const std::string &substring_filename, const fs::path &path, const std::regex &mask,
+                      std::string &output_filename){
+
+    substring substring(substring_filename);
+    std::ofstream output_file;
+    output_file.exceptions(std::ifstream::failbit);
+
+    try {
+        output_file.open(output_filename);
+    }
+    catch (std::ios::failure& e) {
+        std::cout<<"Output file error"<<std::endl;
+        exit(1);
+    }
+
+    boost::asio::thread_pool pool(std::thread::hardware_concurrency());
+
+    for (auto &rsc : fs::recursive_directory_iterator(path, fs::directory_options::skip_permission_denied)) {
+
+        auto filename = rsc.path().filename().string();
+
+        if (std::regex_match(filename, mask) && fs::is_regular_file(rsc)) {
+            auto file_path = rsc.path().string();
+
+            boost::asio::post(pool,[&substring, file_path, &output_file](){rabin_karp_search(substring, file_path, output_file);});
+
+        }
+    }
+
+    pool.join();
+}
 
 int main(int ac, char* av[]){
     po::options_description desc("Allowed options");
@@ -22,37 +54,56 @@ int main(int ac, char* av[]){
             ("help,h", "produce help message")
             ;
     po::variables_map vm;
-    po::store(po::parse_command_line(ac, av, desc), vm);
-    po::notify(vm);
+
+    try {
+        po::store(po::parse_command_line(ac, av, desc), vm);
+        po::notify(vm);
+    }
+    catch (boost::program_options::error& e){
+        std::cout<<"invalid option: "<<e.what()<<std::endl;
+        exit(1);
+    }
 
     fs::path path;
     std::regex mask;
     std::string search_string_filename;
-    std::ofstream output_file;
+    std::string output_filename;
+
+    //checking input arguments
 
     if (vm.count("path")){
         path = vm["path"].as<std::string>();
     }
     else{
-        path = fs::current_path();
+        path = fs::path();
     }
 
     if (vm.count("mask")){
-        mask = vm["mask"].as<std::string>();
+        try {
+
+            mask = vm["mask"].as<std::string>();
+
+        }
+        catch(std::regex_error& e) {
+            std::cout<<"Invalid mask"<<std::endl;
+        }
     } else{
         mask = "^(.*)";
     }
 
     if (vm.count("input")) {
-        search_string_filename = make_absolute_path(path, vm["input"].as<std::string>());
+        fs::path temp(vm["input"].as<std::string>());
+        search_string_filename = fs::absolute(temp, path).string();
     }
 
     if (vm.count("output")) {
-        output_file.open(make_absolute_path(path, vm["output"].as<std::string>()));
+        fs::path temp(vm["output"].as<std::string>());
+        output_filename = fs::absolute( temp, path).string();
     }
     else {
         std::cout<<"File with results not specified, default output file: " << path.string() << "result.txt" << std::endl;
-        output_file.open(make_absolute_path(path, "result.txt"));
+        fs::path temp("result.txt");
+        output_filename = fs::absolute(temp, path).string();
     }
 
     if (vm.count("help")) {
@@ -60,13 +111,8 @@ int main(int ac, char* av[]){
         return 0;
     }
 
-    substring current_substr(search_string_filename);
-
-   view_directory(current_substr, path, mask, output_file);
-
+    search_substring(search_string_filename, path, mask, output_filename);
 
     return 0;
-
-
 
 }

@@ -1,11 +1,9 @@
 #pragma once
-
-
 #include <mutex>
 #include <string>
 #include <fstream>
 #include <iostream>
-#include "search_algorithm.h"
+#include <cstdlib>
 
 extern std::mutex mtx;
 
@@ -27,7 +25,7 @@ private:
     ull _p_pow;
 };
 
-void rabin_karp_search(substring& substr, const std::string& current_search_file, std::ofstream& output);
+void rabin_karp_search(substring& substr, const std::string& search_file, std::ofstream& output);
 ull init_hash(std::ifstream &input, const ull& length);
 ull step_hash(char prev_c, char next_c, const ull &prev_hash, const ull p_pow);
 bool check_strings(std::ifstream &substring, std::ifstream &string_chunk);

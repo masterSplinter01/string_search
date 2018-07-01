@@ -1,13 +1,9 @@
 
+#include "rabin_karp_search.h"
 
-#include "search_algorithm.h"
-
-const size_t p = 53;
-
-//prime const number
+const size_t p = 53; //prime const number that we use for calculating hash
 
 substring::substring(const std::string& filename): _filename(filename), _p_pow(1) {
-    size_t p = 53;
     std::ifstream temp;
     temp.exceptions(std::ifstream::failbit);
     try{
@@ -17,10 +13,12 @@ substring::substring(const std::string& filename): _filename(filename), _p_pow(1
         temp.seekg(0, std::ios::beg);
     }
     catch (std::fstream::failure& e){
-        std::cerr<<"Opening output file error"<<std::endl;
-        std::exit(1);
+        std::cerr<<"Opening substring file error"<<std::endl;
+        exit(1);
     }
+
     _hash =  init_hash(temp, _length);
+
     for (size_t i = 0; i < _length; ++i){
         _p_pow  *= p;
     }
@@ -44,25 +42,31 @@ const ull substring::get_p_pow() {
 }
 
 
-void rabin_karp_search(substring& substr, const std::string &current_search_file, std::ofstream &output)  {
-    std::cout<<"thread for "<< current_search_file<< " begin! \n";
+void rabin_karp_search(substring& substr, const std::string &search_file, std::ofstream &output)  {
 
-    std::ifstream substr_file;
+    std::ifstream substring_file;
     std::ifstream string_fstream1;
     std::ifstream string_fstream2;
 
     string_fstream1.exceptions(std::ifstream::failbit);
 
     try {
-        string_fstream1.open(current_search_file);
-        string_fstream2.open(current_search_file);
-        substr_file.open(substr.get_filename());
+
+        string_fstream1.open(search_file);
+        string_fstream2.open(search_file);
 
     }
     catch (std::ios::failure& e) {
-        std::cout << "Permission denied: " << current_search_file<< std::endl;
-        std::cout<<"thread for "<<current_search_file<<" finished!\n";
+        std::cout << "Permission denied: " << search_file<< std::endl;
         return;
+    }
+
+    try {
+        substring_file.open(substr.get_filename());
+    }
+    catch(std::ios::failure& e){
+        std::cout<<"Can't open file with substring: "<<substr.get_filename()<<std::endl;
+        exit(1);
     }
 
     char prev_c, next_c;
@@ -72,43 +76,44 @@ void rabin_karp_search(substring& substr, const std::string &current_search_file
     string_fstream1.seekg(0, std::ios::beg);
 
     if (substr.get_length() > string_length){
-        std::cout<<"thread for "<<current_search_file<<" finished!\n";
         return;
     }
 
-    auto current_string_chunk_hash = init_hash(string_fstream2, substr.get_length());
+    //calculating hash of 1st chunk of string with length = substring_length
+    auto string_chunk_hash = init_hash(string_fstream2, substr.get_length());
 
 
-
-    //calculating hashes of string chunks with length = substring's length. if hash of substring == hash of chunks, we check that this substrings are the same
-
+    /*to get symbols from chunks of string where we search
+     we read chars from 2 streams:
+            string_fstream1 starts from 0
+            string_fstream2 starts from substring_length*/
 
     while(string_fstream2){
-        if (substr.get_hash() == current_string_chunk_hash && check_strings(substr_file, string_fstream1)){
+        if (substr.get_hash() == string_chunk_hash && check_strings(substring_file, string_fstream1)){
             std::unique_lock<std::mutex> lock(mtx);
-            output<<current_search_file<<std::endl;
-            std::cout<<"thread for "<<current_search_file<<" finished!\n";
+            output<<search_file<<std::endl;
             return;
         }
 
         string_fstream1.get(prev_c);
         string_fstream2.get(next_c);
 
-        current_string_chunk_hash = step_hash(prev_c, next_c, current_string_chunk_hash, substr.get_p_pow());
+        string_chunk_hash = step_hash(prev_c, next_c, string_chunk_hash, substr.get_p_pow());
 
     }
 
 }
 
 bool check_strings(std::ifstream &substring, std::ifstream &string_chunk) {
-    //because of collisions we need to check the strings with the same hashes char by char
     substring.seekg(0);
+    auto pos = string_chunk.tellg();
     char c1, c2;
     while(substring.get(c1) && string_chunk.get(c2)){
         if (c1 != c2){
             return false;
         }
     }
+    string_chunk.seekg(pos);
     return true;
 }
 
@@ -119,7 +124,7 @@ ull init_hash(std::ifstream &input, const ull &length) {
         input.get(c);
         hash = hash * p + c;
     }
-    return  hash;
+    return hash;
 }
 
 ull step_hash(char prev_c, char next_c, const ull &prev_hash, const ull p_pow) {
