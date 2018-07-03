@@ -1,6 +1,7 @@
 Поиск подстроки в файлах.
 
 Запуск программы: 
+
 string_search.exe -p C:\Temp -m *.* -i String.txt -o Result.txt
 
 Вводимые данные: 
